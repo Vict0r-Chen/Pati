@@ -18,16 +18,16 @@ VERSION=$VERSION_ID
 if [ "$RELEASE" == "centos" ] || [ "$RELEASE" == "almalinux" ]; then
     release="centos"
     systemPackage="yum"
-    green 'dectect centos! systemPackage is yum'
+    bule 'dectect centos! systemPackage is yum'
 elif [ "$RELEASE" == "debian" ] || [ "$RELEASE" == "ubuntu" ]; then
     release="debian"
     systemPackage="apt-get"
-	green 'dectect centos! systemPackage is apt-get'
+	blue 'dectect debian or ubuntu! systemPackage is apt-get'
 fi
 systempwd="/etc/systemd/system/"
 
 function install_trojan(){
-    $systemPackage install -y nginx
+    $systemPackage install -y nginx  >/dev/null 2>&1
     if [ ! -d "/etc/nginx/" ]; then
         red "nginx安装有问题，请使用卸载trojan-go后重新安装"
         exit 1
@@ -60,57 +60,21 @@ http {
     }
 }
 EOF
-    systemctl restart nginx
+    systemctl restart nginx >/dev/null 2>&1
     sleep 3
+	green "清空/usr/share/nginx/html/并下载fakesite"
     rm -rf /usr/share/nginx/html/*
     cd /usr/share/nginx/html/
-    wget https://github.com/orznz/Pati/raw/main/fakesite.zip
-    unzip fakesite.zip
+    wget https://github.com/orznz/Pati/raw/main/fakesite.zip >/dev/null 2>&1
+	green "fakesite下载成功，开始解压"
+    unzip fakesite.zip >/dev/null 2>&1
     sleep 5
-    if [ ! -d "/usr/src" ]; then
-        mkdir /usr/src
-    fi
-    if [ ! -d "/usr/src/trojan-cert" ]; then
-        mkdir /usr/src/trojan-cert /usr/src/trojan-go-temp
-        mkdir /usr/src/trojan-cert/$your_domain
-        if [ ! -d "/usr/src/trojan-cert/$your_domain" ]; then
-            red "不存在/usr/src/trojan-cert/$your_domain目录"
-            exit 1
-        fi
-        curl https://get.acme.sh | sh
-        ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl
-        ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx
-        if test -s /root/.acme.sh/$your_domain/fullchain.cer; then
-            cert_success="1"
-        fi
-    elif [ -f "/usr/src/trojan-cert/$your_domain/fullchain.cer" ]; then
-        cd /usr/src/trojan-cert/$your_domain
-        create_time=`stat -c %Y fullchain.cer`
-        now_time=`date +%s`
-        minus=$(($now_time - $create_time ))
-        if [  $minus -gt 5184000 ]; then
-            curl https://get.acme.sh | sh
-            ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl
-            ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx
-            if test -s /root/.acme.sh/$your_domain/fullchain.cer; then
-                cert_success="1"
-            fi
-        else 
-            green "检测到域名$your_domain证书存在且未超过60天，无需重新申请"
-            cert_success="1"
-        fi        
-    else 
-        mkdir /usr/src/trojan-cert/$your_domain
-        curl https://get.acme.sh | sh
-        ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl
-        ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx
-        if test -s /root/.acme.sh/$your_domain/fullchain.cer; then
-            cert_success="1"
-        fi
-    fi
-    
-    if [ "$cert_success" == "1" ]; then
-        cat > /etc/nginx/nginx.conf <<-EOF
+    mkdir /usr/src/trojan-cert/$your_domain -p
+	green "解压成功，开始申请证书"
+    issue_cert
+	green "申请证书成功"
+     
+    cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
 worker_processes  1;
 error_log  /var/log/nginx/error.log warn;
@@ -153,22 +117,22 @@ http {
     
 }
 EOF
-        systemctl restart nginx
-        systemctl enable nginx
-        cd /usr/src
-        wget https://api.github.com/repos/p4gefau1t/trojan-go/releases/latest >/dev/null 2>&1
-        latest_version=`grep tag_name latest| awk -F '[:,"v]' '{print $6}'`
-        rm -f latest
-        green "开始下载最新版trojan-go amd64"
-        wget https://github.com/p4gefau1t/trojan-go/releases/download/v${latest_version}/trojan-go-linux-amd64.zip >/dev/null 2>&1
-        unzip trojan-go-linux-amd64.zip -d trojan-go >/dev/null 2>&1
-        rm -f trojan-go-linux-amd64.zip
-        rm -rf ./trojan-go/example
-        green "请设置trojan-go密码，建议不要出现特殊字符"
-        read -p "请输入密码 :" trojan_passwd
+    systemctl restart nginx  >/dev/null 2>&1
+    systemctl enable nginx  >/dev/null 2>&1
+    cd /usr/src
+    wget https://api.github.com/repos/p4gefau1t/trojan-go/releases/latest >/dev/null 2>&1
+    latest_version=`grep tag_name latest| awk -F '[:,"v]' '{print $6}'`
+    rm -f latest
+    green "下载最新版trojan-go amd64"
+    wget https://github.com/p4gefau1t/trojan-go/releases/download/v${latest_version}/trojan-go-linux-amd64.zip >/dev/null 2>&1
+    unzip trojan-go-linux-amd64.zip -d trojan-go >/dev/null 2>&1
+    rm -f trojan-go-linux-amd64.zip
+    rm -rf ./trojan-go/example
+    green "请设置trojan-go密码，建议不要出现特殊字符"
+    read -p "请输入密码 :" trojan_passwd
 
-        rm -rf /usr/src/trojan-go/server.json
-        cat > /usr/src/trojan-go/server.json <<-EOF
+    rm -rf /usr/src/trojan-go/server.json
+    cat > /usr/src/trojan-go/server.json <<-EOF
 {
   "run_type": "server",
   "local_addr": "0.0.0.0",
@@ -236,8 +200,7 @@ EOF
   }
 }
 EOF
-        rm -rf /usr/src/trojan-go-temp/
-        cat > ${systempwd}trojan-go.service <<-EOF
+    cat > ${systempwd}trojan-go.service <<-EOF
 [Unit]  
 Description=trojan-go  
 After=network.target  
@@ -254,20 +217,16 @@ RestartSec=1s
 WantedBy=multi-user.target
 EOF
 
-        chmod +x ${systempwd}trojan-go.service
-        systemctl enable trojan-go.service
-        cd /root
-        ~/.acme.sh/acme.sh  --installcert  -d  $your_domain   \
-            --key-file   /usr/src/trojan-cert/$your_domain/private.key \
-            --fullchain-file  /usr/src/trojan-cert/$your_domain/fullchain.cer \
-            --reloadcmd  "systemctl restart trojan-go"    
-        green "Trojan-Go安装成功！"
-        showme_sub
-    else
-        red "==================================="
-        red "https证书没有申请成功，本次安装失败"
-        red "==================================="
-    fi
+    chmod +x ${systempwd}trojan-go.service
+    systemctl enable trojan-go.service >/dev/null 2>&1
+    cd /root
+    ~/.acme.sh/acme.sh  --installcert  -d  $your_domain   \
+        --key-file   /usr/src/trojan-cert/$your_domain/private.key \
+        --fullchain-file  /usr/src/trojan-cert/$your_domain/fullchain.cer \
+        --reloadcmd  "systemctl restart trojan-go"  >/dev/null 2>&1   
+    green "Trojan-Go安装成功！"
+    showme_sub
+
 }
 function preinstall_check(){
 
@@ -308,9 +267,9 @@ function preinstall_check(){
         firewall_status=`systemctl status firewalld | grep "Active: active"`
         if [ -n "$firewall_status" ]; then
             green "检测到firewalld开启状态，添加放行80/443端口规则"
-            firewall-cmd --zone=public --add-port=80/tcp --permanent
-            firewall-cmd --zone=public --add-port=443/tcp --permanent
-            firewall-cmd --reload
+            firewall-cmd --zone=public --add-port=80/tcp --permanent  >/dev/null 2>&1
+            firewall-cmd --zone=public --add-port=443/tcp --permanent  >/dev/null 2>&1
+            firewall-cmd --reload  >/dev/null 2>&1
         fi
     elif [ "$release" == "debian" ]; then
         ufw_status=`systemctl status ufw | grep "Active: active"`
@@ -335,7 +294,7 @@ function preinstall_check(){
     green "======================="
     read your_domain
     real_addr=`ping ${your_domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
-    local_addr=`curl ipv4.icanhazip.com`
+    local_addr=`curl -s ipv4.icanhazip.com`
     if [ $real_addr == $local_addr ] ; then
         green "=========================================="
         green "       域名解析正常，开始安装trojan"
@@ -358,6 +317,20 @@ function preinstall_check(){
         fi
     fi
 }
+
+function issue_cert(){
+	curl https://get.acme.sh  >/dev/null 2>&1 | sh  >/dev/null 2>&1
+    ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl >/dev/null 2>&1
+    ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx >/dev/null 2>&1
+	ret=`~/.acme.sh/acme.sh --info -d us2.uu.bi | grep "Le_Domain=${your_domain}"`
+	if [ ret = "" ] ; then
+	    red "======================================================="
+        red "https证书没有申请成功，本次安装失败，请执行卸载，清理已安装文件"
+        red "======================================================="
+		exit 1
+	fi
+}
+
 
 function repair_cert(){
     systemctl stop nginx
@@ -409,7 +382,7 @@ function remove_trojan(){
     systemctl disable nginx
     rm -f ${systempwd}trojan-go.service
     if [ "$RELEASE" == "centos" ] || [ "$RELEASE" == "almalinux" ]; then
-        yum remove -y nginx
+        yum remove -y nginx  >/dev/null 2>&1
     else
         apt-get -y autoremove nginx
         apt-get -y --purge remove nginx
@@ -563,7 +536,7 @@ function showme_sub(){
     password=`cat /usr/src/trojan-go/server.json | grep password | head -n 1 | awk -F '["]' '{ print $(NF-1) }'`
     green " ======================================="
     red "注意：下面仅仅是普通节点订阅链接，如使用clash等软件，请自行转换"
-    green "你的Trojan订阅链接是：trojan://${password}@${domain}:${port}"
+    blue "你的Trojan订阅链接是：trojan://${password}@${domain}:${port}"
     green " 顺便推荐一个稳定实惠的机场：https://goo.gs/SupportMe "
     green " 顺便推荐一个性价比高的VPS：https://goo.gs/gcvps      "
     green " ======================================="
@@ -573,12 +546,13 @@ start_menu(){
     # clear
     green " ======================================="
     green " 介绍: 一键安装trojan-go、ShadowSocks"
-    green " 系统: centos7+/debian9+/ubuntu16.04+"
+    green " 系统: centos(almalinux)7+/debian9+/ubuntu16.04+"
     green " 作者: Atrandys<mod by Laow>             "
     red " 注意:"
     red " *1. 不要在任何生产环境使用此脚本"
-    red " *2. 不要占用80和443端口"
-    red " *3. 若第二次使用脚本安装，请先执行卸载"
+    red " *2. 脚本会直接修改nginx配置并清空/usr/share/nginx/html/目录！！！"
+    red " *3. 不要占用80和443端口"
+    red " *4. 若第二次使用脚本安装，请先执行卸载"
     green " ======================================="
     echo
     green " 1. 安装trojan-go"
