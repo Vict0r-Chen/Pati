@@ -390,7 +390,7 @@ function remove_trojan(){
     systemctl stop nginx
     systemctl disable nginx
     rm -f ${systempwd}trojan-go.service
-    if [ "$RELEASE" == "centos" ] || [ "$RELEASE" == "almalinux" ]; then
+    if [ "$release" == "centos" ]; then
         yum remove -y nginx  >/dev/null 2>&1
     else
         apt-get -y autoremove nginx
