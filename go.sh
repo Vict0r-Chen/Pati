@@ -12,18 +12,27 @@ function version_lt(){
     test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; 
 }
 
-source /etc/os-release
-RELEASE=$ID
-VERSION=$VERSION_ID
-if [ "$RELEASE" == "centos" ] || [ "$RELEASE" == "almalinux" ]; then
+
+if [[ -f /etc/redhat-release ]]; then
     release="centos"
     systemPackage="yum"
-    bule 'dectect centos! systemPackage is yum'
-elif [ "$RELEASE" == "debian" ] || [ "$RELEASE" == "ubuntu" ]; then
+elif grep -Eqi "debian|raspbian|ubuntu" /etc/issue; then
     release="debian"
     systemPackage="apt-get"
-	blue 'dectect debian or ubuntu! systemPackage is apt-get'
+elif grep -Eqi "centos|red hat|redhat" /etc/issue; then
+    release="centos"
+    systemPackage="yum"
+elif grep -Eqi "debian|raspbian|ubuntu" /proc/version; then
+    release="debian"
+    systemPackage="apt-get"
+elif grep -Eqi "centos|red hat|redhat" /proc/version; then
+    release="centos"
+    systemPackage="yum"
+else
+    red "未检测到系统类型，安装失败！请检查你的系统是否在支持范围"
+    exit 1
 fi
+
 systempwd="/etc/systemd/system/"
 
 function install_trojan(){
@@ -62,17 +71,17 @@ http {
 EOF
     systemctl restart nginx >/dev/null 2>&1
     sleep 3
-	green "清空/usr/share/nginx/html/并下载fakesite"
+    green "清空/usr/share/nginx/html/并下载fakesite"
     rm -rf /usr/share/nginx/html/*
     cd /usr/share/nginx/html/
     wget https://github.com/orznz/Pati/raw/main/fakesite.zip >/dev/null 2>&1
-	green "fakesite下载成功，开始解压"
+    green "fakesite下载成功，开始解压"
     unzip fakesite.zip >/dev/null 2>&1
     sleep 5
     mkdir /usr/src/trojan-cert/$your_domain -p
-	green "解压成功，开始申请证书"
+    green "解压成功，开始申请证书"
     issue_cert
-	green "申请证书成功"
+    green "申请证书成功"
      
     cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
@@ -319,16 +328,16 @@ function preinstall_check(){
 }
 
 function issue_cert(){
-	curl https://get.acme.sh  >/dev/null 2>&1 | sh  >/dev/null 2>&1
+    curl https://get.acme.sh  >/dev/null 2>&1 | sh  >/dev/null 2>&1
     ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl >/dev/null 2>&1
     ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx >/dev/null 2>&1
-	ret=`~/.acme.sh/acme.sh --info -d us2.uu.bi | grep "Le_Domain=${your_domain}"`
-	if [ ret = "" ] ; then
-	    red "======================================================="
+    ret=`~/.acme.sh/acme.sh --info -d us2.uu.bi | grep "Le_Domain=${your_domain}"`
+    if [ ret = "" ] ; then
+        red "======================================================="
         red "https证书没有申请成功，本次安装失败，请执行卸载，清理已安装文件"
         red "======================================================="
-		exit 1
-	fi
+        exit 1
+    fi
 }
 
 
@@ -462,8 +471,8 @@ function install_ss(){
             ufw reload
         fi
         $systemPackage update -y
-		$systemPackage install -y --no-install-recommends git libssl-dev gettext build-essential autoconf libtool libpcre3 libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake libmbedtls-dev libsodium-dev pkg-config
-	fi
+        $systemPackage install -y --no-install-recommends git libssl-dev gettext build-essential autoconf libtool libpcre3 libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake libmbedtls-dev libsodium-dev pkg-config
+    fi
     if [ ! -d "/usr/src" ]; then
         mkdir /usr/src
     fi
