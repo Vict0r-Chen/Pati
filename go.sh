@@ -38,7 +38,8 @@ systempwd="/etc/systemd/system/"
 function install_trojan(){
     $systemPackage install -y nginx  >/dev/null 2>&1
     if [ ! -d "/etc/nginx/" ]; then
-        red "nginx安装有问题，请使用卸载trojan-go后重新安装"
+        red "nginx安装有问题，请先执行卸载后手工安装nginx，再次尝试安装Trojan-Go"
+	red "欢迎来这里提交issue反馈问题：https://github.com/orznz/Pati/issues/new/choose"
         exit 1
     fi
     if [ ! -f "/etc/nginx/mime.types" ]; then
@@ -562,7 +563,7 @@ start_menu(){
     # clear
     green " ======================================="
     green " 介绍: 一键安装trojan-go、ShadowSocks"
-    green " 系统: centos(almalinux)7+/debian9+/ubuntu16.04+"
+    green " 系统: Redhat/CentOS/AlmaLinux/RockyLinux/Debian/Ubuntu"
     green " 作者: Atrandys<mod by Laow>             "
     red " 注意:"
     red " *1. 不要在任何生产环境使用此脚本"
