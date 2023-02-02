@@ -561,10 +561,10 @@ function showme_sub(){
 
 start_menu(){
     # clear
-    green " ======================================="
+    green " ===============Pati(爬梯)==============="
     green " 介绍: 一键安装trojan-go、ShadowSocks"
     green " 系统: Redhat/CentOS/AlmaLinux/RockyLinux/Debian/Ubuntu"
-    green " 作者: Atrandys<mod by Laow>             "
+    green " 项目地址: https://github.com/orznz/Pati             "
     red " 注意:"
     red " *1. 不要在任何生产环境使用此脚本"
     red " *2. 脚本会直接修改nginx配置并清空/usr/share/nginx/html/目录！！！"
