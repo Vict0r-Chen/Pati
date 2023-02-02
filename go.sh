@@ -44,8 +44,9 @@ function install_trojan(){
     if [ ! -f "/etc/nginx/mime.types" ]; then
         wget https://raw.githubusercontent.com/nginx/nginx/master/conf/mime.types -O /etc/nginx/mime.types
     fi
-    if [ -f "/etc/nginx/mime.types" ]; then
+    if [ ! -f "/etc/nginx/mime.types" ]; then
         red "/etc/nginx/mime.types有问题，请使用卸载trojan-go后重新安装"
+		exit 1
     fi
     cat > /etc/nginx/nginx.conf <<-EOF
 user  root;
