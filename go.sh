@@ -330,7 +330,7 @@ function preinstall_check(){
 function issue_cert(){
     curl https://get.acme.sh  >/dev/null 2>&1 | sh  >/dev/null 2>&1
     ~/.acme.sh/acme.sh  --register-account  -m test@$your_domain --server zerossl >/dev/null 2>&1
-    ~/.acme.sh/acme.sh  --issue  -d $your_domain  --nginx >/dev/null 2>&1
+    ~/.acme.sh/acme.sh  --issue  -d ${your_domain}  --nginx >/dev/null 2>&1
     ret=`~/.acme.sh/acme.sh --info -d ${your_domain} | grep "Le_Domain=${your_domain}"`
     if [ ret = "" ] ; then
         red "======================================================="
