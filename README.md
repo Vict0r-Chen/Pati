@@ -7,7 +7,7 @@
 3. Onekey build and install latest shadowsocks-libev
 ### Usage
 ```
-source <(curl -sL https://goo.gs/Pati)
+bash <(curl -sL https://goo.gs/Pati)
 ```
 ### Enable BBR
 ```
