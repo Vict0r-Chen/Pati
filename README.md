@@ -5,6 +5,7 @@
 1. Onekey install latest trojan-go server
 2. An AriaNg webservice at ( http | https )://yourdomain/aria when trojan-go has been installed
 3. Onekey build and install latest shadowsocks-libev
+4. Onekey install latest shadowsocks-rust
 ### Usage
 ```
 bash <(curl -sL https://goo.gs/Pati)
