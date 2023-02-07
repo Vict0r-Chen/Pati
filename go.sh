@@ -547,6 +547,99 @@ function remove_ss(){
     green "=============="
 }
 
+function install_ss_rust(){
+    green "======================="
+    blue "请输入SS服务端口"
+    green "======================="
+    read ss_port
+    green "======================="
+    blue "请输入SS密码"
+    green "======================="
+    read ss_password
+    $systemPackage install net-tools -y
+    wait
+    PortSS=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w ${ss_port}`
+    if [ -n "$PortSS" ]; then
+        processSS=`netstat -tlpn | awk -F '[: ]+' -v port=$PortSS '$5==port{print $9}'`
+        red "==========================================================="
+        red "检测到$PortSS端口被占用，占用进程为：${processSS}，本次安装结束"
+        red "==========================================================="
+        exit 1
+    fi
+    if [ "$release" == "centos" ]; then
+        firewall_status=`systemctl status firewalld | grep "Active: active"`
+        if [ -n "$firewall_status" ]; then
+            green "检测到firewalld开启状态，添加放行${ss_port}端口规则"
+            firewall-cmd --zone=public --add-port=$ss_port/tcp --permanent
+            firewall-cmd --reload
+        fi
+    elif [ "$release" == "debian" ]; then
+        ufw_status=`systemctl status ufw | grep "Active: active"`
+        if [ -n "$ufw_status" ]; then
+            ufw allow $ss_port/tcp
+            ufw reload
+        fi
+    fi
+    if [ ! -d "/usr/src" ]; then
+        mkdir /usr/src
+    fi
+    if [ ! -d "/usr/src/ss-rust" ]; then
+        mkdir /usr/src/ss-rust
+    fi
+    cd /usr/src/ss-rust
+    wget https://api.github.com/repos/shadowsocks/shadowsocks-rust/releases/latest >/dev/null 2>&1
+    latest_version=`grep tag_name latest| awk -F '[:,"v]' '{print $6}'`
+    rm -f latest
+    green "下载最新版Shadowsocks-rust"
+    wget https://github.com/shadowsocks/shadowsocks-rust/releases/download/v${latest_version}/shadowsocks-v${latest_version}.x86_64-unknown-linux-gnu.tar.xz -O ss-rust.tar.xz 
+    tar -xvf ss-rust.tar.xz
+    chmod +x ssserver
+    rm -rf /usr/src/ss-rust/ss-config
+    cat > /usr/src/ss-rust/ss-config <<-EOF
+{
+    "server": "0.0.0.0",
+    "server_port": $ss_port,
+    "local_port": 1080,
+    "password": "$ss_password",
+    "timeout": 600,
+    "method": "chacha20-ietf-poly1305"
+}
+EOF
+    cat > ${systempwd}ss.service <<-EOF
+[Unit]  
+Description=ShadowsSocks-rust Server 
+After=network.target  
+   
+[Service]  
+Type=simple  
+PIDFile=/usr/src/ss-rust/ss.pid
+ExecStart=/usr/src/ss-rust/ssserver -c "/usr/src/ss-rust/ss-config" 
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+RestartSec=1s
+   
+[Install]  
+WantedBy=multi-user.target
+EOF
+    chmod +x ${systempwd}ss.service
+    systemctl enable ss.service
+    systemctl restart ss
+}
+
+function remove_ss_rust(){
+    red "================================"
+    red "即将卸载ShadowsSocks-rust....."
+    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如git"
+    red "================================"
+    systemctl stop ss
+    systemctl disable ss
+    rm -f ${systempwd}ss.service
+    rm -rf /usr/src/ss-rust/
+    green "=============="
+    green "ShadowSocks-rust删除完毕"
+    green "=============="
+}
+
 function showme_sub(){
     port=`cat /usr/src/trojan-go/server.json | grep local_port | awk -F '[,]+|[ ]' '{ print $(NF-1) }'`
     domain=`cat /usr/src/trojan-go/server.json | grep private.key | awk -F / '{ print $(NF-1) }'`
@@ -576,9 +669,11 @@ start_menu(){
     red " 2. 卸载trojan-go"
     green " 3. 升级trojan-go"
     green " 4. 修复证书"
-    green " 5. 安装ShadowSocks"
-    red " 6. 卸载ShadowSocks"
-    green " 7. 显示订阅链接"
+    green " 5. 安装ShadowSocks-libev"
+    red " 6. 卸载ShadowSocks-libev"
+    green " 7. 安装ShadowSocks-rust"
+    red " 8. 卸载ShadowSocks-rust"
+    green " 9. 显示订阅链接"
     blue " 0. 退出脚本"
     echo
     read -p "请输入数字 :" num
@@ -602,6 +697,12 @@ start_menu(){
     remove_ss 
     ;;
     7)
+    install_ss_rust 
+    ;;
+    8)
+    remove_ss_rust 
+    ;;
+    9)
     showme_sub 
     ;;
     0)
