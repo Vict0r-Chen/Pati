@@ -654,7 +654,7 @@ function showme_sub(){
 
 start_menu(){
     # clear
-    green " ===============Pati(爬梯)==============="
+    green " =================Pátī================="
     green " 介绍: 一键安装trojan-go、ShadowSocks"
     green " 系统: Redhat/CentOS/AlmaLinux/RockyLinux/Debian/Ubuntu"
     green " 项目地址: https://github.com/orznz/Pati             "
