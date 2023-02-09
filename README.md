@@ -1,4 +1,4 @@
-# Pati【爬梯】
+# Pati【pátī】
 
 ## Features
 0. Tested on Redhat/CentOS/AlmaLinux/RockyLinux/Debian/Ubuntu
