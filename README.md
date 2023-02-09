@@ -1,4 +1,4 @@
-# Pati【pátī】
+# Pátī
 
 ## Features
 0. Tested on Redhat/CentOS/AlmaLinux/RockyLinux/Debian/Ubuntu
