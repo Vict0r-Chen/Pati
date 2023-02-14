@@ -602,7 +602,7 @@ function install_ss_rust(){
     "local_port": 1080,
     "password": "$ss_password",
     "timeout": 600,
-    "method": "xchacha20-ietf-poly1305"
+    "method": "chacha20-ietf-poly1305"
 }
 EOF
     cat > ${systempwd}ss.service <<-EOF
