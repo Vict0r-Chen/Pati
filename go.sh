@@ -534,7 +534,7 @@ EOF
 function remove_ss(){
     red "================================"
     red "即将卸载ShadowsSocks....."
-    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如net-tools、git、"
+    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如net-tools、git等"
     red "================================"
     systemctl stop ss
     systemctl disable ss
@@ -665,13 +665,13 @@ start_menu(){
     red " *4. 若第二次使用脚本安装，请先执行卸载"
     green " ======================================="
     echo
-    green " 1. 安装trojan-go"
+    green " 1. 安装trojan-go【强烈推荐】"
     red " 2. 卸载trojan-go"
     green " 3. 升级trojan-go"
     green " 4. 修复证书"
     green " 5. 安装ShadowSocks-libev"
     red " 6. 卸载ShadowSocks-libev"
-    green " 7. 安装ShadowSocks-rust"
+    green " 7. 安装ShadowSocks-rust【推荐】"
     red " 8. 卸载ShadowSocks-rust"
     green " 9. 显示订阅链接"
     blue " 0. 退出脚本"
