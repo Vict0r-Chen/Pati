@@ -534,7 +534,7 @@ EOF
 function remove_ss(){
     red "================================"
     red "即将卸载ShadowsSocks....."
-    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如git"
+    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如net-tools、git、"
     red "================================"
     systemctl stop ss
     systemctl disable ss
@@ -629,7 +629,7 @@ EOF
 function remove_ss_rust(){
     red "================================"
     red "即将卸载ShadowsSocks-rust....."
-    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如git"
+    red "为防止误卸载，之前安装的倚赖将不会被卸载，请自行决定是否卸载，例如net-tools"
     red "================================"
     systemctl stop ss
     systemctl disable ss
