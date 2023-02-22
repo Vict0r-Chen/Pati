@@ -12,6 +12,10 @@ function version_lt(){
     test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" != "$1"; 
 }
 
+if [ `id -u` -ne 0 ]; then
+    blue "先sudo root切换到root，再重新执行脚本！"
+    exit 1
+fi
 
 if [[ -f /etc/redhat-release ]]; then
     release="centos"
