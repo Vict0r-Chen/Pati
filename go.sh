@@ -664,10 +664,9 @@ start_menu(){
     green " 项目地址: https://github.com/orznz/Pati             "
     red " 注意:"
     red " *1. 不要在任何生产环境使用此脚本"
-    red " *2. 请先切换到root，后执行此脚本！"
-    red " *3. 脚本会直接修改nginx配置并清空/usr/share/nginx/html/目录！！！"
-    red " *4. 不要占用80和443端口"
-    red " *5. 若第二次使用脚本安装，请先执行卸载"
+    red " *2. 脚本会直接修改nginx配置并清空/usr/share/nginx/html/目录！！！"
+    red " *3. 不要占用80和443端口"
+    red " *4. 若第二次使用脚本安装，请先执行卸载"
     green " ======================================="
     echo
     green " 1. 安装trojan-go【强烈推荐】"
