@@ -74,7 +74,7 @@ http {
     client_max_body_size 20m;
     #gzip  on;
     server {
-        listen       80;
+        listen       7480;
         server_name  $your_domain;
         root /usr/share/nginx/html;
         index index.php index.html index.htm;
@@ -116,13 +116,13 @@ http {
     client_max_body_size 20m;
     #gzip  on;
     server {
-        listen       127.0.0.1:80;
+        listen       127.0.0.1:7480;
         server_name  $your_domain;
         root /usr/share/nginx/html;
         index index.php index.html index.htm;
     }
     server {
-        listen       0.0.0.0:80;
+        listen       0.0.0.0:7480;
         server_name  $your_domain;
     
     location  /aria {
@@ -157,9 +157,9 @@ EOF
 {
   "run_type": "server",
   "local_addr": "0.0.0.0",
-  "local_port": 443,
+  "local_port": 7443,
   "remote_addr": "127.0.0.1",
-  "remote_port": 80,
+  "remote_port": 7480,
   "log_level": 1,
   "log_file": "",
   "password": ["$trojan_passwd"],
@@ -256,19 +256,19 @@ function preinstall_check(){
         systemctl stop nginx
     fi
     $systemPackage -y install net-tools socat unzip >/dev/null 2>&1
-    Port80=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 80`
-    Port443=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 443`
+    Port7480=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 7480`
+    Port7443=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 7443`
     if [ -n "$Port80" ]; then
-        process80=`netstat -tlpn | awk -F '[: ]+' '$5=="80"{print $9}'`
+        process7480=`netstat -tlpn | awk -F '[: ]+' '$5=="7480"{print $9}'`
         red "==========================================================="
-        red "检测到80端口被占用，占用进程为：${process80}，本次安装结束"
+        red "检测到7480端口被占用，占用进程为：${process7480}，本次安装结束"
         red "==========================================================="
         exit 1
     fi
-    if [ -n "$Port443" ]; then
-        process443=`netstat -tlpn | awk -F '[: ]+' '$5=="443"{print $9}'`
+    if [ -n "$Port7443" ]; then
+        process7443=`netstat -tlpn | awk -F '[: ]+' '$5=="7443"{print $9}'`
         red "============================================================="
-        red "检测到443端口被占用，占用进程为：${process443}，本次安装结束"
+        red "检测到7443端口被占用，占用进程为：${process7443}，本次安装结束"
         red "============================================================="
         exit 1
     fi
@@ -287,24 +287,24 @@ function preinstall_check(){
     if [ "$release" == "centos" ]; then
         firewall_status=`systemctl status firewalld | grep "Active: active"`
         if [ -n "$firewall_status" ]; then
-            green "检测到firewalld开启状态，添加放行80/443端口规则"
-            firewall-cmd --zone=public --add-port=80/tcp --permanent  >/dev/null 2>&1
-            firewall-cmd --zone=public --add-port=443/tcp --permanent  >/dev/null 2>&1
+            green "检测到firewalld开启状态，添加放行7480/7443端口规则"
+            firewall-cmd --zone=public --add-port=7480/tcp --permanent  >/dev/null 2>&1
+            firewall-cmd --zone=public --add-port=7443/tcp --permanent  >/dev/null 2>&1
             firewall-cmd --reload  >/dev/null 2>&1
         fi
     elif [ "$release" == "debian" ]; then
         ufw_status=`systemctl status ufw | grep "Active: active"`
         if [ -n "$ufw_status" ]; then
-            ufw allow 80/tcp
-            ufw allow 443/tcp
+            ufw allow 7480/tcp
+            ufw allow 7443/tcp
             ufw reload
         fi
         apt-get update
     elif [ "$release" == "debian" ]; then
         ufw_status=`systemctl status ufw | grep "Active: active"`
         if [ -n "$ufw_status" ]; then
-            ufw allow 80/tcp
-            ufw allow 443/tcp
+            ufw allow 7480/tcp
+            ufw allow 7443/tcp
             ufw reload
         fi
         apt-get update
@@ -355,11 +355,11 @@ function issue_cert(){
 
 function repair_cert(){
     systemctl stop nginx
-    Port80=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 80`
-    if [ -n "$Port80" ]; then
-        process80=`netstat -tlpn | awk -F '[: ]+' '$5=="80"{print $9}'`
+    Port7480=`netstat -tlpn | awk -F '[: ]+' '$1=="tcp"{print $5}' | grep -w 7480`
+    if [ -n "$Port7480" ]; then
+        process7480=`netstat -tlpn | awk -F '[: ]+' '$5=="7480"{print $9}'`
         red "==========================================================="
-        red "检测到80端口被占用，占用进程为：${process80}，本次安装结束"
+        red "检测到80端口被占用，占用进程为：${process7480}，本次安装结束"
         red "==========================================================="
         exit 1
     fi
